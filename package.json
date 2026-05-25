@@ -4,7 +4,7 @@
   "description": "An intelligent visual discrepancy and layout feedback engine for AI Coding Agents.",
   "main": "bin/cli.js",
   "bin": {
-    "agent-eye": "./bin/cli.js"
+    "agent-eye": "bin/cli.js"
   },
   "scripts": {
     "postinstall": "node bin/install.js",
