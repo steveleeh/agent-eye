@@ -6,6 +6,9 @@
   "bin": {
     "agent-eye": "bin/cli.js"
   },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
     "postinstall": "node bin/install.js",
     "test": "node bin/cli.js --test"
