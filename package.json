@@ -1,5 +1,5 @@
 {
-  "name": "agent-eye",
+  "name": "@freely-labs/agent-eye",
   "version": "0.1.0",
   "description": "An intelligent visual discrepancy and layout feedback engine for AI Coding Agents.",
   "main": "bin/cli.js",
