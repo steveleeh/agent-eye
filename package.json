@@ -1,0 +1,33 @@
+{
+  "name": "agent-eye",
+  "version": "0.1.0",
+  "description": "An intelligent visual discrepancy and layout feedback engine for AI Coding Agents.",
+  "main": "bin/cli.js",
+  "bin": {
+    "agent-eye": "./bin/cli.js"
+  },
+  "scripts": {
+    "postinstall": "node bin/install.js",
+    "test": "node bin/cli.js --test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/steveleeh/agent-eye.git"
+  },
+  "keywords": [
+    "visual-diff",
+    "layout-diff",
+    "ai-agents",
+    "ssim",
+    "design-to-code",
+    "ui-testing",
+    "self-correction",
+    "agentic-workflows"
+  ],
+  "author": "lihanlei",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/steveleeh/agent-eye/issues"
+  },
+  "homepage": "https://github.com/steveleeh/agent-eye#readme"
+}
