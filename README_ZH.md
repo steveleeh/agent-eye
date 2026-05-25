@@ -1,12 +1,14 @@
-# Agent-Eye 👁️
+# @freely-labs/agent-eye 👁️
 
+[![npm version](https://img.shields.io/npm/v/@freely-labs/agent-eye.svg)](https://www.npmjs.com/package/@freely-labs/agent-eye)
+[![npm downloads](https://img.shields.io/npm/dm/@freely-labs/agent-eye.svg)](https://www.npmjs.com/package/@freely-labs/agent-eye)
 [![Python Version](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/steveleeh/agent-eye/pulls)
 
 🌐 **[English](README.md)**
 
-**Agent-Eye** 是一个专为 AI 生成代码（Design-to-Code / Figma-to-Code）和自动化 UI 测试场景设计的**智能图像差异与布局偏差分析引擎**。
+**Agent-Eye** (`@freely-labs/agent-eye`) 是一个专为 AI 生成代码（Design-to-Code / Figma-to-Code）和自动化 UI 测试场景设计的**智能图像差异与布局偏差分析引擎**。
 
 传统的像素级比对（Pixel-by-Pixel Diffing）在面对微小的对准偏差、字体防锯齿渲染差异或浏览器视口缩放时极其脆弱，容易导致“整页全红误报”。Agent-Eye 借鉴了传统计算机视觉（CV）技术，通过 **结构相似度算法（SSIM）** 结合**形态学组件聚类**，能够像人类测试员一样感知界面的“结构级”错位、缺失与偏差，并以高精度的坐标框（Bounding Box）进行定量数据输出。
 
@@ -21,6 +23,7 @@
   * 生成带**严重等级（Critical / Warning / Info）标注**的坐标框截图。
   * 输出三栏合一的暗黑主题分析仪表盘：`[设计稿] | [标注截图与红墨水差异] | [高表现力差异热力图]`。
 * 🤖 **AI 自动修复友好 (VLM/LLM Friendly)**：不仅有直观的可视化图片，还能直接输出结构化的 **JSON 差异坐标报告**。AI 智能体（Agent）可直接解析坐标并针对性地自我修正 CSS。
+* 🔒 **零冲突沙箱环境隔离**：npm 包在安装时会自动在 package 内部创建一个独立的 Python 虚拟环境 (`.venv/`)，并将所需的 OpenCV 等库独立装载在内，保持您的全局 Python 环境极其干净！
 
 ---
 
@@ -41,36 +44,57 @@
 
 ## 📦 安装与快速开始 (Installation & Quick Start)
 
-### 1. 安装
+### A. Node.js / 前端开发生态 (`npm`)
 
+如果您使用的是 JavaScript/TypeScript、前端测试框架（Playwright, Puppeteer, Cypress）、或者基于 Node 的 AI 编程助手（如 Cursor, Windsurf, Claude Code）：
+
+#### 1. 全局安装
+```bash
+npm install -g @freely-labs/agent-eye
+```
+*(在安装过程中，安装脚本会自动在本地创建 Python 虚拟环境并装载所需的核心依赖，免去手动配置的烦恼)。*
+
+#### 2. 在终端中全局运行
+```bash
+# 运行内置的合成图像测试套件
+agent-eye --test
+
+# 对比您自己的设计稿与截图
+agent-eye --mockup mockup.png --screenshot screenshot.png
+```
+
+#### 3. 免安装即开即用 (npx)
+```bash
+npx @freely-labs/agent-eye --test
+```
+
+---
+
+### B. Python / AI 开发者生态 (`pip`)
+
+如果您正在构建基于 Python 的 AI 智能体应用（如 LangChain、CrewAI、AutoGPT）或者需要将本工具作为 Python 库进行二次开发：
+
+#### 1. 克隆与本地安装
 ```bash
 # 克隆项目
 git clone https://github.com/steveleeh/agent-eye.git
 cd agent-eye
 
-# 安装所需的核心图像处理模块
-pip install -r requirements.txt
+# 以可编辑或标准全局方式安装 Python 模块
+pip install .
 ```
 
-### 2. 运行演示测试 (Run Demo)
-
-项目自带测试图像发生器。只需运行以下命令，即可在 `test_data/` 目录中自动创建一组“模拟设计图”与带有位置偏移、文字拼写错误、色彩变化、内容缺失的“模拟截图”，并自动运行完整的比对闭环：
-
+#### 2. 全局运行终端指令
 ```bash
-python run.py --test
+agent-eye --test
 ```
-
-运行完成后，您的目录下会生成三个文件：
-* `diff_report.json` — 包含所有差异区域 of 偏差坐标和比对得分。
-* `diff_annotated.png` — 圈出错误区域并带有严重评级的截图。
-* `diff_panel.png` — 三合一的对比看板。
 
 ---
 
 ## 🖥️ 命令行参数说明 (CLI Usage)
 
 ```bash
-python run.py --mockup <设计稿路径> --screenshot <截图路径> [选项...]
+agent-eye --mockup <设计稿路径> --screenshot <截图路径> [选项...]
 ```
 
 ### 可用选项：
@@ -160,7 +184,7 @@ Agent-Eye 生成的 `diff_report.json` 能够为您的大模型/视觉模型直�
 
 *   `box`: `[x, y, width, height]` 指明了该偏差在对齐图像上的确切位置。
 *   `mismatch_ratio`: 该区域内有多少比例的像素发生了实质性偏移（0.0 到 1.0）。
-*   `severity`: 严重级别（**Critical / Warning / Info**）。系统根据异常面积 and 颜色漂移值综合计算得出。
+*   `severity`: 严重级别（**Critical / Warning / Info**）。系统根据异常面积和颜色漂移值综合计算得出。
 
 ---
 

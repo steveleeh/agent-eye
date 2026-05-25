@@ -1,12 +1,14 @@
-# Agent-Eye 👁️
+# @freely-labs/agent-eye 👁️
 
+[![npm version](https://img.shields.io/npm/v/@freely-labs/agent-eye.svg)](https://www.npmjs.com/package/@freely-labs/agent-eye)
+[![npm downloads](https://img.shields.io/npm/dm/@freely-labs/agent-eye.svg)](https://www.npmjs.com/package/@freely-labs/agent-eye)
 [![Python Version](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/steveleeh/agent-eye/pulls)
 
 🌐 **[简体中文](README_ZH.md)**
 
-**Agent-Eye** is an intelligent image discrepancy and visual alignment feedback engine designed specifically for AI-generated code (Design-to-Code) workflows and automated UI testing.
+**Agent-Eye** (`@freely-labs/agent-eye`) is an intelligent visual discrepancy and layout feedback engine designed specifically for AI-generated code (Design-to-Code) workflows, automated UI testing, and self-correcting agent loops.
 
 Traditional pixel-by-pixel diffing tools are highly fragile when dealing with minor offsets, subpixel rendering noise, or browser font differences (often leading to a completely red visual diff despite looking identical to the human eye). Agent-Eye resolves this by combining **Structural Similarity Index Measure (SSIM)** with **morphological component clustering** to detect structural shifts, misalignments, and missing elements just like a human tester would, exporting precise bounding boxes and quantitative deviation metrics in structured JSON format.
 
@@ -21,6 +23,7 @@ Traditional pixel-by-pixel diffing tools are highly fragile when dealing with mi
   * Outlines discrepancy zones labeled with color-coded **severity ratings (Critical / Warning / Info)** and error ratios.
   * Exports a sleek dark-themed composite panel: `[Design Mockup] | [Annotated Screenshot with Red Tint overlay] | [Colormap Jet Heatmap]`.
 * 🤖 **AI-Agent & Self-Correcting Friendly**: Generates structured, high-fidelity **JSON reports** detailing coordinate boxes `[x, y, w, h]` and localized deviation scores. AI agents can easily parse these reports to automatically fix CSS layouts!
+* 🔒 **Zero-Conflict isolated Python Setup**: The npm package automatically builds an isolated virtual environment (`.venv/`) inside the package folder during installation, keeping your global Python environment completely clean!
 
 ---
 
@@ -41,36 +44,58 @@ Traditional pixel-by-pixel diffing tools are highly fragile when dealing with mi
 
 ## 📦 Installation & Quick Start
 
-### 1. Installation
+### A. Node.js / Front-end Ecosystem (`npm`)
 
+If you are using JavaScript/TypeScript, visual testing frameworks (Playwright, Puppeteer, Cypress), or Node-based AI tools (e.g. Cursor, Windsurf, Claude Code):
+
+#### 1. Global Installation
+```bash
+npm install -g @freely-labs/agent-eye
+```
+*(During installation, it automatically sets up an isolated Python virtual environment inside the package and installs necessary modules like OpenCV and scikit-image).*
+
+#### 2. Run Globally in your Terminal
+```bash
+# Run the built-in synthetic test suite
+agent-eye --test
+
+# Compare design mockup vs screenshot
+agent-eye --mockup mockup.png --screenshot screenshot.png
+```
+
+#### 3. Zero-Install Execution (npx)
+```bash
+npx @freely-labs/agent-eye --test
+```
+
+---
+
+### B. Python / AI Ecosystem (`pip`)
+
+If you are building Python-based AI Agents (e.g. LangChain, CrewAI, AutoGPT) or custom backend services:
+
+#### 1. Installation
 ```bash
 # Clone the repository
 git clone https://github.com/steveleeh/agent-eye.git
 cd agent-eye
 
-# Install python dependencies
-pip install -r requirements.txt
+# Install standard python package globally or in your virtual environment
+pip install .
 ```
 
-### 2. Run the Built-in Test Suite
-
-Agent-Eye comes with an auto-generating test suite. Running the command below will automatically generate a simulated "Design Mockup" and an altered "Screenshot" (with text typos, shifted buttons, missing labels, and dimension drift) in the `test_data/` folder, run the comparison pipeline, and save the results:
-
+#### 2. Run Globally in your Terminal
 ```bash
-python run.py --test
+# Run the built-in synthetic test suite
+agent-eye --test
 ```
-
-Three files will be generated in your directory:
-* `diff_report.json` — Structured JSON report containing all discrepancy coordinates.
-* `diff_annotated.png` — Screenshot annotated with color-coded error zones and badges.
-* `diff_panel.png` — Dark-themed side-by-side composite panel.
 
 ---
 
 ## 🖥️ Command Line Interface (CLI)
 
 ```bash
-python run.py --mockup <path_to_mockup> --screenshot <path_to_screenshot> [options...]
+agent-eye --mockup <path_to_mockup> --screenshot <path_to_screenshot> [options...]
 ```
 
 ### Options:
