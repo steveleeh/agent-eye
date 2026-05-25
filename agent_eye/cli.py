@@ -89,6 +89,14 @@ def main():
     parser.add_argument("--merge-dist", type=int, default=20, 
                         help="Max pixel distance to merge nearby diff boxes. Default: 20.")
     
+    # Focus modes and advanced options
+    parser.add_argument("--focus", type=str, default="full", choices=["full", "structure", "details", "style"],
+                        help="Visual Attention Focus Mode: full (default), structure, details, style.")
+    parser.add_argument("--auto-layout", action="store_true",
+                        help="Enable horizontal-gap-based vertical local layout shift alignment.")
+    parser.add_argument("--uvt", type=str, default=None,
+                        help="Path to Unified View Tree (UVT) JSON file for semantic DOM selector mapping.")
+    
     parser.add_argument("--out-annotated", type=str, default="diff_annotated.png", 
                         help="Output path for annotated screenshot. Default: diff_annotated.png.")
     parser.add_argument("--out-panel", type=str, default="diff_panel.png", 
@@ -104,7 +112,8 @@ def main():
     screenshot_path = args.screenshot
 
     # If --test is selected or no arguments are provided, generate synthetic images
-    if args.test or (not mockup_path and not screenshot_path):
+    is_test_run = args.test or (not mockup_path and not screenshot_path)
+    if is_test_run:
         mockup_path, screenshot_path = generate_synthetic_images()
 
     if not mockup_path or not screenshot_path:
@@ -114,24 +123,46 @@ def main():
     print(f"\n--- Comparing Mockup & Screenshot ---")
     print(f"Mockup: {mockup_path}")
     print(f"Screenshot: {screenshot_path}")
-    print(f"Settings: Align={args.align}, Thresh={args.threshold}, Dilation={args.dilation}, MinArea={args.min_area}, MergeDist={args.merge_dist}")
+    print(f"Settings: Focus={args.focus}, AutoLayout={args.auto_layout}, UVT={args.uvt}")
+    
+    # For custom real-world runs, default integers from argparse are treated as None to allow scale-invariant computing
+    # unless they are explicitly overridden or it is the built-in synthetic test.
+    dilation = args.dilation if args.dilation != 18 or is_test_run else None
+    min_area = args.min_area if args.min_area != 35 or is_test_run else None
+    merge_dist = args.merge_dist if args.merge_dist != 20 or is_test_run else None
+
+    # Load UVT payload if provided
+    uvt_data = None
+    if args.uvt:
+        if os.path.exists(args.uvt):
+            try:
+                with open(args.uvt, "r", encoding="utf-8") as f:
+                    uvt_data = json.load(f)
+                print(f"✓ Loaded UVT file: {args.uvt}")
+            except Exception as e:
+                print(f"⚠ Failed to parse UVT JSON: {e}")
+        else:
+            print(f"⚠ UVT file not found: {args.uvt}")
 
     # 1. Initialize Engine
     engine = ImageCompareEngine(
         threshold=args.threshold,
-        dilation_size=args.dilation,
-        min_area=args.min_area,
-        merge_dist=args.merge_dist
+        dilation_size=dilation,
+        min_area=min_area,
+        merge_dist=merge_dist,
+        auto_layout=args.auto_layout
     )
 
     # 2. Run Comparison
-    results = engine.compare(mockup_path, screenshot_path, align_method=args.align)
+    results = engine.compare(mockup_path, screenshot_path, align_method=args.align, uvt=uvt_data, focus_mode=args.focus)
 
     # 3. Save JSON Report
     report = {
         "overall_similarity_score": round(results["overall_similarity"], 4),
         "overall_mismatch_percentage": round(results["overall_mismatch_percentage"], 3),
         "regions_detected_count": len(results["regions"]),
+        "focus_mode": args.focus,
+        "auto_layout_aligned": args.auto_layout,
         "mismatched_regions": results["regions"]
     }
     
@@ -159,7 +190,7 @@ def main():
     print(f"✓ Side-by-side dashboard saved to: {args.out_panel}")
 
     # 5. Output Console Summary
-    print(f"\n--- Analysis Summary ---")
+    print(f"\n--- Analysis Summary ({args.focus.upper()} Focus) ---")
     print(f"SSIM Similarity Index: {report['overall_similarity_score'] * 100:.2f}%")
     print(f"Total Discrepancy Area: {report['overall_mismatch_percentage']:.2f}% of canvas")
     print(f"Discrepant Regions Found: {report['regions_detected_count']}")
@@ -167,7 +198,8 @@ def main():
     for reg in report["mismatched_regions"]:
         box_str = f"x={reg['box'][0]}, y={reg['box'][1]}, w={reg['box'][2]}, h={reg['box'][3]}"
         pct_str = f"{int(reg['mismatch_ratio']*100)}%"
-        print(f"  [{reg['severity']}] Region #{reg['id']}: Area {box_str} | local error {pct_str} | color diff {reg['mean_color_diff']:.1f}")
+        dom_str = f" | Selector: {reg['selector']}" if "selector" in reg and reg["selector"] else ""
+        print(f"  [{reg['severity']}] Region #{reg['id']}: Area {box_str} | local error {pct_str} | color diff {reg['mean_color_diff']:.1f}{dom_str}")
     print("------------------------\n")
 
 if __name__ == "__main__":

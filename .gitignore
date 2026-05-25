@@ -38,11 +38,14 @@ Thumbs.db
 
 # Project generated test data and visual results
 test_data/
-diff_annotated.png
-diff_panel.png
-diff_report.json
+diff_annotated*.png
+diff_panel*.png
+diff_report*.json
 annotated_output.png
 *.log
+
+# Node dependencies
+node_modules/
 
 # IDEs
 .vscode/
